@@ -101,6 +101,8 @@ void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
     btModule.begin(115200);
     Serial.println("will initialize");
+// end test
+return;
 
     // Seed the random number generator
     randomSeed(analogRead(14));
@@ -147,6 +149,15 @@ void setup() {
 
 
 void loop() {
+  // test
+  
+   while (btModule.available() > 0){
+      delay(10);  //small delay to allow input buffer to fill 
+      Serial.print(char(btModule.read()));
+   }
+   return;
+   ///end test
+
   // If stuff was typed in the serial monitor
    while (btModule.available() > 0){
       delay(10);  //small delay to allow input buffer to fill 
