@@ -94,6 +94,8 @@ SmartMatrix matrix;
 #define btModule Serial1
 // set this to the hardware serial port you wish to use
 String outString = "";
+char fileName[] = "fileTest.txt";
+File myFile;
 
 // Setup method runs once, when the sketch starts
 void setup() {
@@ -143,53 +145,71 @@ void setup() {
   */  
 }
 
-void testSD(){
-    
-  char fileName[] = "fileTest.txt";
-  File myFile;
-
- // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
+void openFileSD(){
+  SD.remove(fileName);
+  
   myFile = SD.open(fileName, FILE_WRITE);
   
   // if the file opened okay, write to it:
   if (myFile) {
-    Serial.print("Writing to test.txt...");
-    myFile.println("testing 1, 2, 3.");
-	// close the file:
-    myFile.close();
-    Serial.println("done.");
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println("error opening");
+     Serial.println("file opened");
+  }else{
+     Serial.println("error opening test.txt");
   }
-  
-  // re-open the file for reading:
-  myFile = SD.open(fileName);
-  if (myFile) {
-    Serial.println(fileName);
-    
-    // read from the file until there's nothing else in it:
-    while (myFile.available()) {
-    	Serial.write(myFile.read());
-    }
-    // close the file:
+}
+
+void closeFileSD(){
+      // close the file:
     myFile.close();
     Serial.println("file closed");
-  } else {
-  	// if the file didn't open, print an error:
-    Serial.println("error opening test.txt");
-  }
+}
 
+void testTestFileSD(){
+    Serial.println("test reading file");
+
+  //  closeFileSD();
+  //  openFileSD();
+    
+    myFile = SD.open(fileName);
+
+   while (myFile.available()){
+     // TODO ecrire chaque hexa sur nibble
+     // #define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
+    // #define LO_NIBBLE(b) ((b) & 0x0F)
+     char hexa2 = myFile.read();
+     
+   //  Serial.print(hexa2 & maskRight);
+   //  Serial.println(hexa2, BIN);
+   //  Serial.println("----");
+   //  Serial.println(hexa2, HEX);
+     Serial.print(hexa2);
+   }
+
+
+   Serial.println("test done reading file");
+
+    closeFileSD();
 }
 
 void loop() {
   
   while (Serial.available() > 0){
-        char c = char(Serial.read());     
-        if(c == 'x'){
-          testSD();
-        }
+        char c = char(Serial.read()); 
+        Serial.print(c);
+    
+     if(c == 'o'){
+        openFileSD();
+     }
+     else if(c == 'x'){
+        closeFileSD();
+     }
+     else if(c == 't'){
+        testTestFileSD();
+     }
+    // must be hexavalue
+    else{
+      myFile.print(c);
+    }     
   }
 
   // If stuff was typed in the serial monitor
