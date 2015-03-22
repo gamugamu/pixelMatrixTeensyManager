@@ -94,19 +94,27 @@ SmartMatrix matrix;
 #define btModule Serial1
 // set this to the hardware serial port you wish to use
 String outString = "";
-char charBuf[12] = "abcde";
 
 // Setup method runs once, when the sketch starts
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
-    btModule.begin(115200);
+   // btModule.begin(115200);
     Serial.println("will initialize");
+    
+    // initialize the SD card at full speed
+    pinMode(SD_CS, OUTPUT);
+    
+      Serial.println("execute");
+  if(!SD.begin(SD_CS)) {
+     //  matrix.scrollText("No SD card", -1);
+     Serial.println("No SD card");
+     while(1);
+   }
+   
 // end test
-return;
 
     // Seed the random number generator
-    randomSeed(analogRead(14));
-    Serial.println("will initialize");
+ /*   randomSeed(analogRead(14));
 
     // Initialize matrix
     matrix.begin();
@@ -116,20 +124,9 @@ return;
     matrix.fillScreen(COLOR_BLACK);
     matrix.swapBuffers();
     matrix.scrollText("Welkom", -1);
-    Serial.println("Welkom");
-    String test = "testf";
-    test.toCharArray(charBuf, 10) ;
+*/
 
-/*
-    // initialize the SD card at full speed
-    pinMode(SD_CS, OUTPUT);
-    if (!SD.begin(SD_CS)) {
-        matrix.scrollText("No SD card", -1);
-        Serial.println("No SD card");
-        while(1);
-    }
-
-    // Determine how many animated GIF files exist
+/*    // Determine how many animated GIF files exist
     numberOfFiles = enumerateGIFFiles(GIF_DIRECTORY, false);
 
     if(numberOfFiles < 0) {
@@ -143,29 +140,68 @@ return;
         Serial.println("Empty gifs directory");
         while(1);
     }
-    */
+  */  
 }
 
+void testSD(){
+    
+  char fileName[] = "fileTest.txt";
+  File myFile;
 
+ // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open(fileName, FILE_WRITE);
+  
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Writing to test.txt...");
+    myFile.println("testing 1, 2, 3.");
+	// close the file:
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening");
+  }
+  
+  // re-open the file for reading:
+  myFile = SD.open(fileName);
+  if (myFile) {
+    Serial.println(fileName);
+    
+    // read from the file until there's nothing else in it:
+    while (myFile.available()) {
+    	Serial.write(myFile.read());
+    }
+    // close the file:
+    myFile.close();
+    Serial.println("file closed");
+  } else {
+  	// if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+
+}
 
 void loop() {
-  // test
   
-   while (btModule.available() > 0){
-      delay(10);  //small delay to allow input buffer to fill 
-      Serial.print(char(btModule.read()));
-   }
-   return;
-   ///end test
+  while (Serial.available() > 0){
+        char c = char(Serial.read());     
+        if(c == 'x'){
+          testSD();
+        }
+  }
 
   // If stuff was typed in the serial monitor
+  /*
    while (btModule.available() > 0){
       delay(10);  //small delay to allow input buffer to fill 
       char c = char(btModule.read());     
       outString += c; // Add it
       Serial.println(c);
-
-      if(c == 13 || c == '\n'/* \n */){
+      
+      // '\n' \n 
+      if(c == 13 || c ==){
         // echo the input, so the client is informed everything is ok
         btModule.println(outString);
         // Removing the \n because smartMatrix doesn't handle this.        
@@ -186,7 +222,7 @@ void loop() {
       }
    }  
    
-
+*/
    /*
     unsigned long futureTime;
     char pathname[30];
@@ -213,3 +249,4 @@ void loop() {
     }
     */
 }
+
