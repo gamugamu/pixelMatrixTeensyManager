@@ -90,8 +90,11 @@ SmartMatrix matrix;
 #define SD_CS 15
 
 #define GIF_DIRECTORY "/gifs/"
+#define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
+#define LO_NIBBLE(b) ((b) & 0x0F)
 
 #define btModule Serial1
+
 // set this to the hardware serial port you wish to use
 String outString = "";
 char fileName[] = "fileTest.txt";
@@ -174,8 +177,7 @@ void testTestFileSD(){
 
    while (myFile.available()){
      // TODO ecrire chaque hexa sur nibble
-     // #define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
-    // #define LO_NIBBLE(b) ((b) & 0x0F)
+ 
      char hexa2 = myFile.read();
      
    //  Serial.print(hexa2 & maskRight);
@@ -191,25 +193,40 @@ void testTestFileSD(){
     closeFileSD();
 }
 
+byte getVal(char c){
+   if(c >= '0' && c <= '9')
+     return (byte)(c - '0');
+   else
+     return (byte)(c-'A'+10);
+}
+
 void loop() {
+  char buffer;
+  int moduloNimble = 0;
   
   while (Serial.available() > 0){
-        char c = char(Serial.read()); 
-        Serial.print(c);
+       char c = char(Serial.read()); 
     
-     if(c == 'o'){
-        openFileSD();
-     }
-     else if(c == 'x'){
-        closeFileSD();
-     }
-     else if(c == 't'){
-        testTestFileSD();
-     }
-    // must be hexavalue
-    else{
-      myFile.print(c);
-    }     
+       if(c == 'o'){
+          openFileSD();
+       }
+       else if(c == 'x'){
+          closeFileSD();
+       }
+       else if(c == 't'){
+          testTestFileSD();
+       }
+      // must be hexavalue
+      else{
+        if(moduloNimble++ % 2){
+           buffer |= LO_NIBBLE(getVal(c));
+
+           Serial.print(buffer, HEX);
+           buffer = 0x00;
+        }else{
+           buffer |= LO_NIBBLE(getVal(c)) << 4;
+        }
+      }     
   }
 
   // If stuff was typed in the serial monitor
