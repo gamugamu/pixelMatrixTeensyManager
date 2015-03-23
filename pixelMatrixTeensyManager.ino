@@ -168,31 +168,30 @@ void closeFileSD(){
 }
 
 void testTestFileSD(){
-    Serial.println("test reading file");
+   Serial.println("test reading file");  
+   myFile = SD.open(fileName);
 
-  //  closeFileSD();
-  //  openFileSD();
-    
-    myFile = SD.open(fileName);
-
-   while (myFile.available()){
-     // TODO ecrire chaque hexa sur nibble
- 
+   // print file as ascii. Note some binary values are not asii (8 plain full bits)
+   while (myFile.available()){ 
      char hexa2 = myFile.read();
-     
-   //  Serial.print(hexa2 & maskRight);
-   //  Serial.println(hexa2, BIN);
-   //  Serial.println("----");
-   //  Serial.println(hexa2, HEX);
      Serial.print(hexa2);
    }
 
+   closeFileSD();
+    
+   myFile = SD.open(fileName);
 
+   // print in hexa to test if file has been properly written.
+   while (myFile.available()){
+      char hexa2 = myFile.read();
+      Serial.print(hexa2, HEX);
+   }
+
+   closeFileSD();
    Serial.println("test done reading file");
-
-    closeFileSD();
 }
 
+// convert ASCII hex representation to hex litteral value.
 byte getVal(char c){
    if(c >= '0' && c <= '9')
      return (byte)(c - '0');
@@ -204,6 +203,11 @@ void loop() {
   char buffer;
   int moduloNimble = 0;
   
+  // input sent as ascii representating hexa value.
+  // Wich means we need to convert them back into the 
+  // hexa value they represent litteraly. Paquet is read
+  // one byte at a time, so each time, the nimbles must be
+  // kept in order. This is what moduloNimble take care of.
   while (Serial.available() > 0){
        char c = char(Serial.read()); 
     
@@ -216,15 +220,19 @@ void loop() {
        else if(c == 't'){
           testTestFileSD();
        }
-      // must be hexavalue
       else{
-        if(moduloNimble++ % 2){
-           buffer |= LO_NIBBLE(getVal(c));
-
-           Serial.print(buffer, HEX);
-           buffer = 0x00;
+        // Remember, the nimble must be keep in order to
+        // reconstruct the byte value.
+        if(!(moduloNimble++ % 2)){
+          // high nimble
+          buffer |= LO_NIBBLE(getVal(c)) << 4;
         }else{
-           buffer |= LO_NIBBLE(getVal(c)) << 4;
+          // low nimble + high nimble
+          buffer |= LO_NIBBLE(getVal(c));
+          myFile.print(buffer);
+            
+          // now clear buffer
+          buffer = 0x00;
         }
       }     
   }
