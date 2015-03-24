@@ -90,6 +90,8 @@ SmartMatrix matrix;
 #define SD_CS 15
 
 #define GIF_DIRECTORY "/gifs/"
+#define TEST_DIRECTORY "/test/"
+
 #define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
 #define LO_NIBBLE(b) ((b) & 0x0F)
 
@@ -97,24 +99,25 @@ SmartMatrix matrix;
 
 // set this to the hardware serial port you wish to use
 String outString = "";
-char fileName[] = "fileTest.txt";
+char fileName[] = "test/fileTest.gif";
 File myFile;
 
 // Setup method runs once, when the sketch starts
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
-   // btModule.begin(115200);
+  // btModule.begin(115200);
     Serial.println("will initialize");
-    
+
     // initialize the SD card at full speed
     pinMode(SD_CS, OUTPUT);
-    
-      Serial.println("execute");
-  if(!SD.begin(SD_CS)) {
-     //  matrix.scrollText("No SD card", -1);
-     Serial.println("No SD card");
-     while(1);
-   }
+    Serial.println("execute");
+    if(!SD.begin(SD_CS)) {
+       //  matrix.scrollText("No SD card", -1);
+        Serial.println("No SD card");
+       while(1);
+    }else
+        SD.mkdir("test");
+
    
 // end test
 
@@ -169,6 +172,7 @@ void closeFileSD(){
 
 void testTestFileSD(){
    Serial.println("test reading file");  
+   
    myFile = SD.open(fileName);
 
    // print file as ascii. Note some binary values are not asii (8 plain full bits)
@@ -189,6 +193,13 @@ void testTestFileSD(){
 
    closeFileSD();
    Serial.println("test done reading file");
+   
+   char pathName[30];
+   int numberOfFiles = enumerateGIFFiles(TEST_DIRECTORY, false);
+   getGIFFilenameByIndex(TEST_DIRECTORY, 0, pathName);
+   Serial.println("number of file");
+   Serial.println(pathName);
+   Serial.println(numberOfFiles);
 }
 
 // convert ASCII hex representation to hex litteral value.
@@ -210,7 +221,7 @@ void loop() {
   // kept in order. This is what moduloNimble take care of.
   while (Serial.available() > 0){
        char c = char(Serial.read()); 
-    
+
        if(c == 'o'){
           openFileSD();
        }

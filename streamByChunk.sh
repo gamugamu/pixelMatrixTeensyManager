@@ -1,4 +1,3 @@
-
 # This is a test to perform data transfert between a serial port and a bluetooth
 # device. For the moment there's some part hardcoded because it's only test purpose
 # and you should not use this code anyway.
