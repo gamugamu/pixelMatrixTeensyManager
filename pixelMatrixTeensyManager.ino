@@ -1,67 +1,9 @@
-/*
- * Animated GIFs Display Code for SmartMatrix and 32x32 RGB LED Panels
- *
- * Uses SmartMatrix Library for Teensy 3.1 written by Louis Beaudoin at pixelmatix.com
- *
- * Written by: Craig A. Lindley
- *
- * Copyright (c) 2014 Craig A. Lindley
- * Minor modifications by Louis Beaudoin (Pixelmatix)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
- /*
-  * This example displays 32x32 GIF animations loaded from a SD Card connected to the Teensy 3.1
-  * The GIFs must be 32x32 pixels exactly
-  * Wiring is on the default Teensy 3.1 SPI pins, and chip select can be on any GPIO,
-  * set by defining SD_CS in the code below
-  * Function     | Pin
-  * DOUT         |  11
-  * DIN          |  12
-  * CLK          |  13
-  * CS (default) |  15
-  *
-  * This code first looks for .gif files in the /gifs/ directory
-  * (customize below with the GIF_DIRECTORY definition) then plays random GIFs in the directory,
-  * looping each GIF for DISPLAY_TIME_SECONDS
-  *
-  * This example is meant to give you an idea of how to add GIF playback to your own sketch.
-  * For a project that adds GIF playback with other features, take a look at
-  * Light Appliance:
-  * https://github.com/CraigLindley/LightAppliance
-  *
-  * If you find any 32x32 GIFs that won't play properly, please attach them to a new
-  * Issue post in the GitHub repo here:
-  * https://github.com/pixelmatix/AnimatedGIFs/issues
-  *
-  * This sketch requires the SdFat Library: https://github.com/greiman/SdFat
-  *
-  * If you're having trouble compiling this sketch, view instructions in the README file, which is
-  * available online here: https://github.com/pixelmatix/AnimatedGIFs/
-  *
-  */
-
 #include <math.h>
 #include <stdlib.h>
 #include <SPI.h>
-#include <SD.h>
 #include <SmartMatrix_32x32.h>
+#include <SD.h>
+#include "ScannerStreams.h"
 
 #define DISPLAY_TIME_SECONDS 10
 
@@ -88,37 +30,16 @@ SmartMatrix matrix;
 
 // Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
-
-#define GIF_DIRECTORY "/gifs/"
-#define TEST_DIRECTORY "/test/"
-
-#define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
-#define LO_NIBBLE(b) ((b) & 0x0F)
-
 #define btModule Serial1
 
 // set this to the hardware serial port you wish to use
 String outString = "";
-char fileName[] = "test/fileTest.gif";
-File myFile;
 
 // Setup method runs once, when the sketch starts
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
   // btModule.begin(115200);
-    Serial.println("will initialize");
-
-    // initialize the SD card at full speed
-    pinMode(SD_CS, OUTPUT);
-    Serial.println("execute");
-    if(!SD.begin(SD_CS)) {
-       //  matrix.scrollText("No SD card", -1);
-        Serial.println("No SD card");
-       while(1);
-    }else
-        SD.mkdir("test");
-
-   
+   //ScannerStream scanner(&Serial);
 // end test
 
     // Seed the random number generator
@@ -151,103 +72,7 @@ void setup() {
   */  
 }
 
-void openFileSD(){
-  SD.remove(fileName);
-  
-  myFile = SD.open(fileName, FILE_WRITE);
-  
-  // if the file opened okay, write to it:
-  if (myFile) {
-     Serial.println("file opened");
-  }else{
-     Serial.println("error opening test.txt");
-  }
-}
-
-void closeFileSD(){
-      // close the file:
-    myFile.close();
-    Serial.println("file closed");
-}
-
-void testTestFileSD(){
-   Serial.println("test reading file");  
-   
-   myFile = SD.open(fileName);
-
-   // print file as ascii. Note some binary values are not asii (8 plain full bits)
-   while (myFile.available()){ 
-     char hexa2 = myFile.read();
-     Serial.print(hexa2);
-   }
-
-   closeFileSD();
-    
-   myFile = SD.open(fileName);
-
-   // print in hexa to test if file has been properly written.
-   while (myFile.available()){
-      char hexa2 = myFile.read();
-      Serial.print(hexa2, HEX);
-   }
-
-   closeFileSD();
-   Serial.println("test done reading file");
-   
-   char pathName[30];
-   int numberOfFiles = enumerateGIFFiles(TEST_DIRECTORY, false);
-   getGIFFilenameByIndex(TEST_DIRECTORY, 0, pathName);
-   Serial.println("number of file");
-   Serial.println(pathName);
-   Serial.println(numberOfFiles);
-}
-
-// convert ASCII hex representation to hex litteral value.
-byte getVal(char c){
-   if(c >= '0' && c <= '9')
-     return (byte)(c - '0');
-   else
-     return (byte)(c-'A'+10);
-}
-
 void loop() {
-  char buffer;
-  int moduloNimble = 0;
-  
-  // input sent as ascii representating hexa value.
-  // Wich means we need to convert them back into the 
-  // hexa value they represent litteraly. Paquet is read
-  // one byte at a time, so each time, the nimbles must be
-  // kept in order. This is what moduloNimble take care of.
-  while (Serial.available() > 0){
-       char c = char(Serial.read()); 
-
-       if(c == 'o'){
-          openFileSD();
-       }
-       else if(c == 'x'){
-          closeFileSD();
-       }
-       else if(c == 't'){
-          testTestFileSD();
-       }
-      else{
-        // Remember, the nimble must be keep in order to
-        // reconstruct the byte value.
-        if(!(moduloNimble++ % 2)){
-          // high nimble
-          buffer |= LO_NIBBLE(getVal(c)) << 4;
-        }else{
-          // low nimble + high nimble
-          buffer |= LO_NIBBLE(getVal(c));
-          myFile.print(buffer);
-            
-          // now clear buffer
-          buffer = 0x00;
-        }
-      }     
-  }
-
   // If stuff was typed in the serial monitor
   /*
    while (btModule.available() > 0){
