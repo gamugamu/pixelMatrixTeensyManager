@@ -27,6 +27,7 @@ const int HEIGHT = 32;
 
 // Smart Matrix instance
 SmartMatrix matrix;
+ScannerStream scanner;
 
 // Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
@@ -39,7 +40,7 @@ String outString = "";
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
   // btModule.begin(115200);
-   //ScannerStream scanner(&Serial);
+    scanner.setupScanner((HardwareSerial*)&Serial);
 // end test
 
     // Seed the random number generator
@@ -73,6 +74,9 @@ void setup() {
 }
 
 void loop() {
+
+    scanner.performScannerIfCan();
+
   // If stuff was typed in the serial monitor
   /*
    while (btModule.available() > 0){

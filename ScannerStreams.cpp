@@ -8,7 +8,7 @@
 #define GIF_DIRECTORY "/gifs/"
 #define TEST_DIRECTORY "/test/"
 
-ScannerStream::ScannerStream(HardwareSerial* serial){
+void ScannerStream::setupScanner(HardwareSerial* serial){
     this->_serial = serial;
 }
 
@@ -31,7 +31,7 @@ void ScannerStream::setUpSDCard(int port){
 void ScannerStream::performScannerIfCan(){
     char buffer;
     int moduloNimble = 0;
-    
+
     // input sent as ascii representating hexa value.
     // Wich means we need to convert them back into the 
     // hexa value they represent litteraly. Paquet is read
@@ -39,7 +39,7 @@ void ScannerStream::performScannerIfCan(){
     // kept in order. This is what moduloNimble take care of.
     while (_serial->available() > 0){
        char c = _serial->read();
-       
+        
         // Remember, the nimble must be keep in order to
         // reconstruct the byte value.
         if(!(moduloNimble++ % 2)){
@@ -48,8 +48,11 @@ void ScannerStream::performScannerIfCan(){
         }else{
           // low nimble + high nimble
           buffer |= LO_NIBBLE(getVal(c));
+           _serial->print(buffer);
+           // TODO rajouter les règles de parsing.
+/*
           myFile.print(buffer);
-            
+           
           if(buffer == 'o'){
             openFileSD();
           }
@@ -59,7 +62,7 @@ void ScannerStream::performScannerIfCan(){
           else if(buffer == 't'){
             testTestFileSD();
           }
-            
+            */
           // now clear buffer
           buffer = 0x00;
         }
@@ -119,7 +122,7 @@ void ScannerStream::testTestFileSD(){
 }
 
 // convert ASCII hex representation to hex litteral value.
-char ScannerStream::getVal(char c){
+byte ScannerStream::getVal(char c){
    if(c >= '0' && c <= '9')
      return (byte)(c - '0');
    else
