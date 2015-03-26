@@ -40,7 +40,10 @@ String outString = "";
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
   // btModule.begin(115200);
+      
     scanner.setupScanner((HardwareSerial*)&Serial);
+    scanner.setUpSDCard(&SD, SD_CS);
+
 // end test
 
     // Seed the random number generator

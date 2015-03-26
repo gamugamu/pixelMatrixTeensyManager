@@ -16,16 +16,17 @@ void ScannerStream::setupDefault(){
     fileName = "test/fileTest.gif";
 }
 
-void ScannerStream::setUpSDCard(int port){
+void ScannerStream::setUpSDCard(SDClass* SD, int port){
+    _SD = SD;
     // initialize the SD card at full speed
     pinMode(port, OUTPUT);
 
-    if(!SD.begin(port)) {
+    if(!_SD->begin(port)) {
        //  matrix.scrollText("No SD card", -1);
         Serial.println("No SD card");
        while(1);
     }else
-        SD.mkdir("test");
+        _SD->mkdir("test");
 }
 
 void ScannerStream::performScannerIfCan(){
@@ -70,9 +71,9 @@ void ScannerStream::performScannerIfCan(){
 }
 
 void ScannerStream::openFileSD(){
-  SD.remove(fileName);
+  _SD->remove(fileName);
   
-  myFile = SD.open(fileName, FILE_WRITE);
+  myFile = _SD->open(fileName, FILE_WRITE);
   
   // if the file opened okay, write to it:
   if (myFile) {
@@ -91,7 +92,7 @@ void ScannerStream::closeFileSD(){
 void ScannerStream::testTestFileSD(){
    Serial.println("test reading file");  
    
-   myFile = SD.open(fileName);
+   myFile = _SD->open(fileName);
 
    // print file as ascii. Note some binary values are not asii (8 plain full bits)
    while (myFile.available()){ 
@@ -101,7 +102,7 @@ void ScannerStream::testTestFileSD(){
 
    closeFileSD();
     
-   myFile = SD.open(fileName);
+   myFile = _SD->open(fileName);
 
    // print in hexa to test if file has been properly written.
    while (myFile.available()){

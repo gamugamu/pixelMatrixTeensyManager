@@ -4,12 +4,12 @@
 class ScannerStream{
   public:
   void setupScanner(HardwareSerial* serial);
+  void setUpSDCard(SDClass* SD, int port);
   void performScannerIfCan();
 
   private:
   // setup
   void setupDefault();
-  void setUpSDCard(int port);
   // file management
   void openFileSD();
   void closeFileSD();
@@ -17,6 +17,8 @@ class ScannerStream{
   byte getVal(char c);
  
   HardwareSerial* _serial;
+  SDClass* _SD;
+
   char* fileName;
   File myFile;
 };
