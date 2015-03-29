@@ -3,7 +3,7 @@
 #include <SPI.h>
 #include <SmartMatrix_32x32.h>
 #include <SD.h>
-#include "ScannerStreams.h"
+#include <ScannerStreams.cpp>
 
 #define DISPLAY_TIME_SECONDS 10
 
@@ -27,7 +27,6 @@ const int HEIGHT = 32;
 
 // Smart Matrix instance
 SmartMatrix matrix;
-ScannerStream scanner;
 
 // Chip select for SD card on the SmartMatrix Shield
 #define SD_CS 15
@@ -40,10 +39,7 @@ String outString = "";
 void setup() {
     Serial.begin(9600);  // Arduino 57600 is actually 58824
   // btModule.begin(115200);
-      
-    scanner.setupScanner((HardwareSerial*)&Serial);
-    scanner.setUpSDCard(&SD, SD_CS);
-
+   ScannerStreams scanner;
 // end test
 
     // Seed the random number generator
@@ -73,13 +69,10 @@ void setup() {
         Serial.println("Empty gifs directory");
         while(1);
     }
-  */  
+  */ 
 }
 
 void loop() {
-
-    scanner.performScannerIfCan();
-
   // If stuff was typed in the serial monitor
   /*
    while (btModule.available() > 0){
